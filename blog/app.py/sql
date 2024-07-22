@@ -1,0 +1,78 @@
+import mysql.connector
+
+# Configuración de la conexión a la base de datos
+db_config = {
+    'host': 'localhost',
+    'user': 'root',
+    'password': 'CVO2024',
+    'database': 'carnitas',
+}
+
+# Función para obtener los datos de los productos
+def obtener_productos():
+    try:
+        # Conectar a la base de datos
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor()
+
+        # Ejecutar la consulta para obtener los datos de productos (nombre, tipo, precio)
+        query = "SELECT nombre, tipo, precio FROM Productos"
+        cursor.execute(query)
+        productos = cursor.fetchall()
+
+        # Cerrar el cursor y la conexión
+        cursor.close()
+        conn.close()
+
+        return productos
+
+    except mysql.connector.Error as e:
+        print(f"Error al conectar a MySQL: {e}")
+        return None
+
+# Función para generar el archivo HTML con los datos de productos
+def generar_html(productos):
+    html_content = """
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Productos</title>
+    </head>
+    <body>
+        <h1>Lista de Productos</h1>
+        <table border="1">
+            <tr>
+                <th>Nombre</th>
+                <th>Tipo</th>
+                <th>Precio</th>
+            </tr>
+    """
+
+    for producto in productos:
+        html_content += f"""
+            <tr>
+                <td>{producto[0]}</td> <!-- Nombre -->
+                <td>{producto[1]}</td> <!-- Tipo -->
+                <td>${producto[2]}</td> <!-- Precio -->
+            </tr>
+        """
+
+    html_content += """
+        </table>
+    </body>
+    </html>
+    """
+
+    # Guardar el contenido HTML en un archivo
+    with open('productos.html', 'w', encoding='utf-8') as file:
+        file.write(html_content)
+
+if __name__ == '__main__':
+    productos = obtener_productos()
+    if productos:
+        generar_html(productos)
+        print("Archivo HTML generado exitosamente: productos.html")
+    else:
+        print("No se pudieron obtener los datos de productos.")
